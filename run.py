@@ -13,11 +13,42 @@ from models.LMGNN import BertGGCN
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 import matplotlib.pyplot as plt
 from test import test
+from collections import OrderedDict
+from utils.functions.cpg.function import Function
 
 PATHS = configs.Paths()
 FILES = configs.Files()
 DEVICE = FILES.get_device()
 
+def order_nodes(nodes, max_nodes):
+    # sorts nodes by line and column
+
+    nodes_by_column = sorted(nodes.items(), key=lambda n: n[1].get_column_number())
+    nodes_by_line = sorted(nodes_by_column, key=lambda n: n[1].get_line_number())
+
+    for i, node in enumerate(nodes_by_line):
+        node[1].order = i
+
+    if len(nodes) > max_nodes:
+        print(f"CPG cut - original nodes: {len(nodes)} to max: {max_nodes}")
+        return OrderedDict(nodes_by_line[:max_nodes])
+
+    return OrderedDict(nodes_by_line)
+
+def filter_nodes(nodes):
+    return {n_id: node for n_id, node in nodes.items() if node.has_code() and
+            node.has_line_number() and
+            node.label not in ["Comment", "Unknown"]}
+    
+def parse_to_nodes(cpg, max_nodes=500):
+    nodes = {}
+    for function in cpg["functions"]:
+        func = Function(function)
+        # Only nodes with code and line number are selected
+        filtered_nodes = filter_nodes(func.get_nodes())
+        nodes.update(filtered_nodes)
+
+    return order_nodes(nodes, max_nodes)
 
 def select(dataset):
     result = dataset.loc[dataset['project'] == "FFmpeg"]
@@ -84,9 +115,8 @@ def Embed_generator():
         tokens_dataset = data.tokenize(cpg_dataset)
         data.write(tokens_dataset, PATHS.tokens, f"{file_name}_{FILES.tokens}")
 
-        cpg_dataset["nodes"] = cpg_dataset.apply(lambda row: cpg.parse_to_nodes(row.cpg, context.nodes_dim), axis=1)
-        cpg_dataset["input"] = cpg_dataset.apply(lambda row: process.nodes_to_input(row.nodes, row.target, context.nodes_dim,
-                                                                            context.edge_type), axis=1)
+        cpg_dataset["nodes"] = cpg_dataset.apply(lambda row: parse_to_nodes(row.cpg, context.nodes_dim), axis=1)
+        cpg_dataset["input"] = cpg_dataset.apply(lambda row: process.nodes_to_input(row.nodes, row.target, context.nodes_dim, row.cpg, context.edge_type), axis=1)
         data.drop(cpg_dataset, ["nodes"])
         print(f"Saving input dataset {file_name} with size {len(cpg_dataset)}.")
         # write(cpg_dataset[["input", "target"]], PATHS.input, f"{file_name}_{FILES.input}")

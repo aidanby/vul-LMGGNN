@@ -28,7 +28,7 @@
         "tokens" : "data/tokens/"
     },
     "files" : {
-        "raw" : "dataset.json",
+        "raw" : "devign.json",
         "cpg" : "cpg",
         "tokens" : "tokens.pkl",
         "input" : "input.pkl"

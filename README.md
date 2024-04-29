@@ -34,6 +34,7 @@ We evaluated the performance of our model using four publicly available datasets
 | [VDSIC](https://osf.io/d45bw/)                               | 82,411        | 119,1955          | Github, Debian |
 | [ReVeal](https://github.com/VulDetProject/ReVeal)            | 1664          | 16,505            | Chrome, Debian |
 
+
 ## Usage
 
 ##### Some tips:
@@ -47,7 +48,7 @@ We evaluated the performance of our model using four publicly available datasets
 ##### **Preparing the CPG :**
 
 ```
-python run.py -cpg -embed -mode train -path /your/model/path
+python run.py -cpg -embed -mode train -path /home/Vul-LMGGNN/checkpoints
 ```
 
 `-cpg` and `-embed` respectively represent using `joern` to extract the code's `CPG` and generating corresponding embeddings. `-path` is used to specify the path for saving the model.
@@ -55,7 +56,7 @@ python run.py -cpg -embed -mode train -path /your/model/path
 ##### Training and Testing:
 
 ```
-python run.py -mode test -path /your/model/saved/path
+python run.py -mode train -path /home/vul-LMGGNN/checkpoints/1
 ```
 
 `-mode` is used to specify whether only the training process is executed or both the training and testing processes are performed.  `-path` is used to specify the path for saving the model.

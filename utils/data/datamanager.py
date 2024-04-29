@@ -8,7 +8,7 @@ from os.path import isfile, join
 from ..functions.input_dataset import InputDataset
 from ..functions import parse
 from sklearn.model_selection import train_test_split
-
+import json
 
 def read(path, json_file):
     """
@@ -16,7 +16,10 @@ def read(path, json_file):
     :param json_file: str
     :return DataFrame
     """
-    return pd.read_json(path + json_file)
+    with open(path + json_file) as json_file:
+        data = json_file.readlines()
+        data = list(map(json.loads, data)) 
+    return pd.DataFrame(data)
 
 
 def get_ratio(dataset, ratio):
